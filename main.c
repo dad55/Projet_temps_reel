@@ -87,7 +87,7 @@ void initStruct(void) {
     }
 
 //////////////////////////////////////////////////////////////////
-	if(err = rt_task_create(&tinit_camera,NULL,0,11,0)) {
+	if(err = rt_task_create(&tinit_camera,NULL,0,PRIORITY_TCAMERA,0)) {
 		rt_printf("Error task create : %s\n", strerror(-err));
 		exit(EXIT_FAILURE);	
 	}
@@ -122,7 +122,7 @@ void startTasks() {
         rt_printf("Error task start: %s\n", strerror(-err));
         exit(EXIT_FAILURE);
     }
-//////////////////////////////////////////
+
 	if (err = rt_task_start(&tinit_camera, &init_camera, NULL)) {
         rt_printf("Error task init camera: %s\n", strerror(-err));
         exit(EXIT_FAILURE);

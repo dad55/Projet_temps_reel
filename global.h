@@ -35,12 +35,16 @@ extern DServer *serveur;
 extern DRobot *robot;
 extern DMovement *move;
 
+
 /* @constantes */
 extern int MSG_QUEUE_SIZE;
 extern int PRIORITY_TSERVEUR;
 extern int PRIORITY_TCONNECT;
 extern int PRIORITY_TMOVE;
 extern int PRIORITY_TENVOYER;
+extern int PRIORITY_TCAMERA;
+
+
 
 #endif	/* GLOBAL_H */
 
