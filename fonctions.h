@@ -19,6 +19,7 @@ extern "C" {
         void deplacer(void *arg);
         void envoyer(void *arg);
 
+////////////////////////////////////////
 	void init_camera(void);
 #ifdef	__cplusplus
 }

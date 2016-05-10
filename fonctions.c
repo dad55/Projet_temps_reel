@@ -175,13 +175,29 @@ int write_in_queue(RT_QUEUE *msgQueue, void * data, int size) {
     return err;
 }
 
+
 void init_camera(void) {
 	DCamera* camera;
+	DImage* image;
+	DJpegimage* jpeg;
+	DMessage* message;
 
 	camera =  d_new_camera();
-	camera.open(camera);
+	image = d_new_image();
+	jpeg = d_new_jpegimage();
+	message = d_new_message();
 
-	camera.print(camera);
+	camera->open(camera);
+
+	while(1){
+		camera->get_frame(camera,image);
+
+		jpeg->compress(jpeg,image);
+
+		message->put_jpeg_image(message,jpeg);
+	
+		serveur->send(serveur,message);
+	}
 	
 
 	
