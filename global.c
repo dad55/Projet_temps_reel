@@ -23,6 +23,8 @@ RT_QUEUE queueMsgGUI;
 
 int etatCommMoniteur = 1;
 int etatCommRobot = 1;
+int etatCamera = 0;
+int etatPosition = 0;
 DRobot *robot;
 DMovement *move;
 DServer *serveur;
@@ -34,4 +36,4 @@ int PRIORITY_TSERVEUR = 30;
 int PRIORITY_TCONNECT = 20;
 int PRIORITY_TMOVE = 10;
 int PRIORITY_TENVOYER = 25;
-int PRIORITY_TCAMERA = 40;
+int PRIORITY_TCAMERA = 20;
