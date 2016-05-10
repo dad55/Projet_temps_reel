@@ -179,9 +179,9 @@ void init_camera(void) {
 	DCamera* camera;
 
 	camera =  d_new_camera();
-	camera.open(camera);
+	d_camera_open(camera);
 
-	camera.print(camera);
+	d_camera_print(camera);
 	
 
 	
