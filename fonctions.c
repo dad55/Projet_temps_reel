@@ -28,14 +28,18 @@ void connecter(void * arg) {
         rt_printf("tconnect : Attente du sémarphore semConnecterRobot\n");
         rt_sem_p(&semConnecterRobot, TM_INFINITE);
         rt_printf("tconnect : Ouverture de la communication avec le robot\n");
+	rt_mutex_acquire(&mutexCommRobot, TM_INFINITE);
         status = robot->open_device(robot);
+	rt_mutex_release(&mutexCommRobot);
 
         rt_mutex_acquire(&mutexEtat, TM_INFINITE);
         etatCommRobot = status;
         rt_mutex_release(&mutexEtat);
 
         if (status == STATUS_OK) {
+		rt_mutex_acquire(&mutexCommRobot, TM_INFINITE);
             status = robot->start_insecurely(robot);
+		rt_mutex_release(&mutexCommRobot);
             if (status == STATUS_OK){
                 rt_printf("tconnect : Robot démarrer\n");
             }
@@ -155,8 +159,10 @@ void deplacer(void *arg) {
                     break;
             }
             rt_mutex_release(&mutexMove);
-
+		
+		rt_mutex_acquire(&mutexCommRobot, TM_INFINITE);
             status = robot->set_motors(robot, gauche, droite);
+		rt_mutex_release(&mutexCommRobot);
 
             if (status != STATUS_OK) {
                 rt_mutex_acquire(&mutexEtat, TM_INFINITE);
@@ -257,13 +263,15 @@ void gestion_wdt(void){
 
 	while(1){
 		rt_task_wait_period(NULL);
+		rt_printf("tgestion_wdt : Activation périodique\n");
 		
 		rt_mutex_acquire(&mutexEtat, TM_INFINITE);
         	status = etatCommRobot;
         	rt_mutex_release(&mutexEtat);
 		if(status == STATUS_OK){
+			rt_mutex_acquire(&mutexCommRobot, TM_INFINITE);
 			status = robot->reload_wdt(robot);
-			
+			rt_mutex_release(&mutexCommRobot);
 			if (status != STATUS_OK) {
 				rt_mutex_acquire(&mutexEtat, TM_INFINITE);
 				etatCommRobot = status;

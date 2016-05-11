@@ -17,6 +17,7 @@ RT_TASK tgestion_wdt;
 
 RT_MUTEX mutexEtat;
 RT_MUTEX mutexMove;
+RT_MUTEX mutexCommRobot;
 
 RT_SEM semConnecterRobot;
 

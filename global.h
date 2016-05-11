@@ -22,6 +22,7 @@ extern RT_TASK tgestion_wdt;
 /* @descripteurs des mutex */
 extern RT_MUTEX mutexEtat;
 extern RT_MUTEX mutexMove;
+extern RT_MUTEX mutexCommRobot;
 
 /* @descripteurs des sempahore */
 extern RT_SEM semConnecterRobot;
