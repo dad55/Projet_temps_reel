@@ -202,36 +202,48 @@ void init_camera(void) {
 	camera =  d_new_camera();
 	image = d_new_image();
 	jpeg = d_new_jpegimage();
-	message = d_new_message();
 	arena = d_new_arena();
 	position = d_new_position();
 
 	camera->open(camera);
+	
+	rt_printf("tcamera : Debut de l'éxecution periodique à 600ms\n");
+    	rt_task_set_periodic(NULL, TM_NOW, 600000000);
 
 	while(1){
-
-		if(etatCamera == ACTION_FIND_ARENA){
-			camera->get_frame(camera,image);
-			arena = image->compute_arena_position(image);
-			d_imageshop_draw_arena(image, arena);
-			jpeg->compress(jpeg,image);
-			message->put_jpeg_image(message,jpeg);
-			serveur->send(serveur,message);
-			while(etatCamera == ACTION_FIND_ARENA); // a changer utiliser truc mutex ou envoi de message
-		}
-		else{
-			camera->get_frame(camera,image);
-			if(arena != NULL)
+		rt_task_wait_period(NULL);
+       		rt_printf("tcamera : Activation périodique\n");
+		if(serveur->is_active(serveur)){
+			if(etatCamera == ACTION_FIND_ARENA){
+				camera->get_frame(camera,image);
+				arena = image->compute_arena_position(image);
 				d_imageshop_draw_arena(image, arena);
-			if(etatPosition == 1){
-				position = image->compute_robot_position(image, arena);
-				d_imageshop_draw_position(image, position);
-				message->put_position(message,position);
-				serveur->send(serveur,message);
+				jpeg->compress(jpeg,image);
+				message = d_new_message();
+				message->put_jpeg_image(message,jpeg);
+				if (write_in_queue(&queueMsgGUI, message, sizeof (DMessage)) < 0) 
+		           		message->free(message);
 			}
-			jpeg->compress(jpeg,image);
-			message->put_jpeg_image(message,jpeg);
-			serveur->send(serveur,message);
+			else{
+				camera->get_frame(camera,image);
+				if(arena != NULL)
+					d_imageshop_draw_arena(image, arena);
+				if(etatPosition == 1){
+					position = image->compute_robot_position(image, arena);
+					d_imageshop_draw_position(image, position);
+					if(position != NULL){
+						message = d_new_message();
+						message->put_position(message,position);
+						if (write_in_queue(&queueMsgGUI, message, sizeof (DMessage)) < 0) 
+		           				message->free(message);
+					}
+				}
+				jpeg->compress(jpeg,image);
+				message = d_new_message();
+				message->put_jpeg_image(message,jpeg);
+				if (write_in_queue(&queueMsgGUI, message, sizeof (DMessage)) < 0) 
+		           		message->free(message);
+			}
 		}
 	}
 }
