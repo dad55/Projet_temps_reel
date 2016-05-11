@@ -12,7 +12,8 @@ RT_TASK tconnect;
 RT_TASK tmove;
 RT_TASK tenvoyer;
 //////////////////////////////////
-RT_TASK tinit_camera;
+RT_TASK tcamera;
+RT_TASK tgestion_wdt;
 
 RT_MUTEX mutexEtat;
 RT_MUTEX mutexMove;
@@ -37,3 +38,4 @@ int PRIORITY_TCONNECT = 20;
 int PRIORITY_TMOVE = 10;
 int PRIORITY_TENVOYER = 25;
 int PRIORITY_TCAMERA = 20;
+int PRIORITY_TGESTION_WDT = 21;

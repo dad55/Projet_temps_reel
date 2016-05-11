@@ -20,7 +20,8 @@ extern "C" {
         void envoyer(void *arg);
 
 ////////////////////////////////////////
-	void init_camera(void);
+	void camera(void);
+	void gestion_wdt(void);
 #ifdef	__cplusplus
 }
 #endif

@@ -191,7 +191,7 @@ int write_in_queue(RT_QUEUE *msgQueue, void * data, int size) {
 }
 
 
-void init_camera(void) {
+void camera(void) {
 	DCamera* camera;
 	DImage* image;
 	DJpegimage* jpeg;
@@ -244,6 +244,39 @@ void init_camera(void) {
 				if (write_in_queue(&queueMsgGUI, message, sizeof (DMessage)) < 0) 
 		           		message->free(message);
 			}
+		}
+	}
+}
+
+void gestion_wdt(void){
+	int status = 1;
+	DMessage* message;
+
+	rt_printf("tgestion_wdt : Debut de l'éxecution periodique à 950ms (max 1050ms)\n");
+    	rt_task_set_periodic(NULL, TM_NOW, 950000000);
+
+	while(1){
+		rt_task_wait_period(NULL);
+		
+		rt_mutex_acquire(&mutexEtat, TM_INFINITE);
+        	status = etatCommRobot;
+        	rt_mutex_release(&mutexEtat);
+		if(status == STATUS_OK){
+			status = robot->reload_wdt(robot);
+			
+			if (status != STATUS_OK) {
+				rt_mutex_acquire(&mutexEtat, TM_INFINITE);
+				etatCommRobot = status;
+				rt_mutex_release(&mutexEtat);
+
+				message = d_new_message();
+				message->put_state(message, status);
+
+				rt_printf("tgestion_wdt : Envoi message\n");
+				if (write_in_queue(&queueMsgGUI, message, sizeof (DMessage)) < 0) {
+					message->free(message);
+				}
+            		}
 		}
 	}
 }

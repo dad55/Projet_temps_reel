@@ -87,7 +87,12 @@ void initStruct(void) {
     }
 
 //////////////////////////////////////////////////////////////////
-	if(err = rt_task_create(&tinit_camera,NULL,0,PRIORITY_TCAMERA,0)) {
+	if(err = rt_task_create(&tcamera,NULL,0,PRIORITY_TCAMERA,0)) {
+		rt_printf("Error task create : %s\n", strerror(-err));
+		exit(EXIT_FAILURE);	
+	}
+
+	if(err = rt_task_create(&tgestion_wdt,NULL,0,PRIORITY_TGESTION_WDT,0)) {
 		rt_printf("Error task create : %s\n", strerror(-err));
 		exit(EXIT_FAILURE);	
 	}
@@ -123,8 +128,13 @@ void startTasks() {
         exit(EXIT_FAILURE);
     }
 
-	if (err = rt_task_start(&tinit_camera, &init_camera, NULL)) {
-        rt_printf("Error task init camera: %s\n", strerror(-err));
+	if (err = rt_task_start(&tcamera, &camera, NULL)) {
+        rt_printf("Error task camera: %s\n", strerror(-err));
+        exit(EXIT_FAILURE);
+    }
+
+	if (err = rt_task_start(&tgestion_wdt, &gestion_wdt, NULL)) {
+        rt_printf("Error task gestion watchdog: %s\n", strerror(-err));
         exit(EXIT_FAILURE);
     }
 
@@ -135,5 +145,6 @@ void deleteTasks() {
     rt_task_delete(&tconnect);
     rt_task_delete(&tmove);
 //////////////////////////////////////
-	rt_task_delete(&tinit_camera);
+	rt_task_delete(&tcamera);
+	rt_task_delete(&tgestion_wdt);
 }

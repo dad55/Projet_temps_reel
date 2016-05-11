@@ -16,7 +16,8 @@ extern RT_TASK tconnect;
 extern RT_TASK tmove;
 extern RT_TASK tenvoyer;
 //////////////////////////////////////////////////////////
-extern RT_TASK tinit_camera;
+extern RT_TASK tcamera;
+extern RT_TASK tgestion_wdt;
 
 /* @descripteurs des mutex */
 extern RT_MUTEX mutexEtat;
@@ -46,6 +47,7 @@ extern int PRIORITY_TCONNECT;
 extern int PRIORITY_TMOVE;
 extern int PRIORITY_TENVOYER;
 extern int PRIORITY_TCAMERA;
+extern int PRIORITY_TGESTION_WDT;
 
 
 
