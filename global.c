@@ -14,12 +14,14 @@ RT_TASK tenvoyer;
 //////////////////////////////////
 RT_TASK tcamera;
 RT_TASK tgestion_wdt;
+RT_TASK tsurvBatterie;
 
 RT_MUTEX mutexEtat;
 RT_MUTEX mutexMove;
 RT_MUTEX mutexCommRobot;
 
 RT_SEM semConnecterRobot;
+RT_SEM semWdtRobot;
 
 RT_QUEUE queueMsgGUI;
 
@@ -27,6 +29,7 @@ int etatCommMoniteur = 1;
 int etatCommRobot = 1;
 int etatCamera = 0;
 int etatPosition = 0;
+int cptTestComm = 0;
 DRobot *robot;
 DMovement *move;
 DServer *serveur;
@@ -35,8 +38,9 @@ DServer *serveur;
 int MSG_QUEUE_SIZE = 10;
 
 int PRIORITY_TSERVEUR = 30;
-int PRIORITY_TCONNECT = 20;
+int PRIORITY_TCONNECT = 25;
 int PRIORITY_TMOVE = 10;
 int PRIORITY_TENVOYER = 25;
 int PRIORITY_TCAMERA = 20;
-int PRIORITY_TGESTION_WDT = 21;
+int PRIORITY_TGESTION_WDT = 31;
+int PRIORITY_TSURVBATTERIE = 24;

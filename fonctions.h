@@ -22,6 +22,8 @@ extern "C" {
 ////////////////////////////////////////
 	void camera(void);
 	void gestion_wdt(void);
+	int testCommRobot(void);
+	void survBatterie(void);
 #ifdef	__cplusplus
 }
 #endif

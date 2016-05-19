@@ -72,6 +72,11 @@ void initStruct(void) {
         exit(EXIT_FAILURE);
     }
 
+    if (err = rt_sem_create(&semWdtRobot, NULL, 0, S_FIFO)) {
+        rt_printf("Error semaphore create: %s\n", strerror(-err));
+        exit(EXIT_FAILURE);
+    }
+
     /* Creation des taches */
     if (err = rt_task_create(&tServeur, NULL, 0, PRIORITY_TSERVEUR, 0)) {
         rt_printf("Error task create: %s\n", strerror(-err));
@@ -100,6 +105,12 @@ void initStruct(void) {
 		rt_printf("Error task create : %s\n", strerror(-err));
 		exit(EXIT_FAILURE);	
 	}
+
+	if(err = rt_task_create(&tsurvBatterie,NULL,0,PRIORITY_TSURVBATTERIE,0)) {
+		rt_printf("Error task create : %s\n", strerror(-err));
+		exit(EXIT_FAILURE);	
+	}
+	
 
     /* Creation des files de messages */
     if (err = rt_queue_create(&queueMsgGUI, "toto", MSG_QUEUE_SIZE*sizeof(DMessage), MSG_QUEUE_SIZE, Q_FIFO)){
@@ -142,6 +153,11 @@ void startTasks() {
         exit(EXIT_FAILURE);
     }
 
+	if (err = rt_task_start(&tsurvBatterie, &survBatterie, NULL)) {
+        rt_printf("Error task surveillance batterie: %s\n", strerror(-err));
+        exit(EXIT_FAILURE);
+    }
+
 }
 
 void deleteTasks() {
@@ -151,4 +167,5 @@ void deleteTasks() {
 //////////////////////////////////////
 	rt_task_delete(&tcamera);
 	rt_task_delete(&tgestion_wdt);
+	rt_task_delete(&tsurvBatterie);
 }
