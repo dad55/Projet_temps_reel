@@ -24,6 +24,9 @@ extern RT_TASK tsurvBatterie;
 extern RT_MUTEX mutexEtat;
 extern RT_MUTEX mutexMove;
 extern RT_MUTEX mutexCommRobot;
+extern RT_MUTEX mutexMessage;
+extern RT_MUTEX mutexCamera;
+extern RT_MUTEX mutexPosition;
 
 /* @descripteurs des sempahore */
 extern RT_SEM semConnecterRobot;

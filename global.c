@@ -19,6 +19,9 @@ RT_TASK tsurvBatterie;
 RT_MUTEX mutexEtat;
 RT_MUTEX mutexMove;
 RT_MUTEX mutexCommRobot;
+RT_MUTEX mutexMessage;
+RT_MUTEX mutexCamera;
+RT_MUTEX mutexPosition;
 
 RT_SEM semConnecterRobot;
 RT_SEM semWdtRobot;

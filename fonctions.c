@@ -8,6 +8,7 @@ void envoyer(void * arg) {
 
     while (1) {
         rt_printf("tenvoyer : Attente d'un message\n");
+	//rt_mutex_acquire(&mutexMessage, TM_INFINITE);
         if ((err = rt_queue_read(&queueMsgGUI, &msg, sizeof (DMessage), TM_INFINITE)) >= 0) {
             rt_printf("tenvoyer : envoi d'un message au moniteur\n");
             serveur->send(serveur, msg);
@@ -15,11 +16,13 @@ void envoyer(void * arg) {
         } else {
             rt_printf("Error msg queue write: %s\n", strerror(-err));
         }
+	//rt_mutex_release(&mutexMessage);
     }
 }
 
 void connecter(void * arg) {
     int status;
+    int versionMin, versionMaj;
     DMessage *message;
 
     rt_printf("tconnect : Debut de l'exécution de tconnect\n");
@@ -38,7 +41,7 @@ void connecter(void * arg) {
 
         if (status == STATUS_OK) {
 		rt_mutex_acquire(&mutexCommRobot, TM_INFINITE);
-            status = robot->start(robot);
+            status = robot->start_insecurely(robot);
 		rt_mutex_release(&mutexCommRobot);
             if (status == STATUS_OK){
                 rt_printf("tconnect : Robot démarrer\n");
@@ -50,7 +53,18 @@ void connecter(void * arg) {
 		rt_mutex_release(&mutexEtat);
 	    }
         }
-
+	
+	if(status == STATUS_OK){
+		rt_mutex_acquire(&mutexCommRobot,TM_INFINITE);
+		status = robot->get_version(robot,&versionMaj,&versionMin);
+		rt_mutex_release(&mutexCommRobot);
+		message = d_new_message();
+		d_message_put_version(message,versionMaj,versionMin);
+		if (write_in_queue(&queueMsgGUI, message, sizeof (DMessage)) < 0) {
+           	 message->free(message);
+        	}	
+	}
+	
         message = d_new_message();
         message->put_state(message, status);
 
@@ -93,19 +107,29 @@ void communiquer(void *arg) {
                             rt_sem_v(&semConnecterRobot);
                             break;
 			case ACTION_FIND_ARENA :
+				rt_mutex_acquire(&mutexCamera, TM_INFINITE);
 				etatCamera = ACTION_FIND_ARENA ;
+				rt_mutex_release(&mutexCamera);
 				break;
 			case ACTION_ARENA_FAILED :
+				rt_mutex_acquire(&mutexCamera, TM_INFINITE);
 				etatCamera = ACTION_ARENA_FAILED;
+				rt_mutex_release(&mutexCamera);
 				break;
 			case ACTION_ARENA_IS_FOUND :  
+				rt_mutex_acquire(&mutexCamera, TM_INFINITE);
 				etatCamera = ACTION_ARENA_IS_FOUND;
+				rt_mutex_release(&mutexCamera);
 				break;
 			case ACTION_COMPUTE_CONTINUOUSLY_POSITION :
+				rt_mutex_acquire(&mutexPosition, TM_INFINITE);
 				etatPosition = 1;
+				rt_mutex_release(&mutexPosition);
 				break;
 			case ACTION_STOP_COMPUTE_POSITION :	
+				rt_mutex_acquire(&mutexPosition, TM_INFINITE);
 				etatPosition = 0;
+				rt_mutex_release(&mutexPosition);
 				break;
                     }
                     break;
@@ -171,20 +195,6 @@ void deplacer(void *arg) {
 		rt_mutex_release(&mutexCommRobot);
 
 		testCommRobot();
-
-           /* if (status != STATUS_OK) {
-                rt_mutex_acquire(&mutexEtat, TM_INFINITE);
-                etatCommRobot = status;
-                rt_mutex_release(&mutexEtat);
-
-                message = d_new_message();
-                message->put_state(message, status);
-
-                rt_printf("tmove : Envoi message\n");
-                if (write_in_queue(&queueMsgGUI, message, sizeof (DMessage)) < 0) {
-                    message->free(message);
-                }
-            }*/
         }
     }
 }
@@ -195,12 +205,10 @@ int write_in_queue(RT_QUEUE *msgQueue, void * data, int size) {
 
     msg = rt_queue_alloc(msgQueue, size);
     memcpy(msg, &data, size);
-
     if ((err = rt_queue_send(msgQueue, msg, sizeof (DMessage), Q_NORMAL)) < 0) {
         rt_printf("Error msg queue send: %s\n", strerror(-err));
     }
     rt_queue_free(&queueMsgGUI, msg);
-
     return err;
 }
 
@@ -212,6 +220,8 @@ void camera(void) {
 	DMessage* message;
 	DArena* arena;
 	DPosition* position;
+	int etatCam;
+	int etatPos;
 	
 	camera =  d_new_camera();
 	image = d_new_image();
@@ -228,7 +238,13 @@ void camera(void) {
 		rt_task_wait_period(NULL);
        		rt_printf("tcamera : Activation périodique\n");
 		if(serveur->is_active(serveur)){
-			if(etatCamera == ACTION_FIND_ARENA){
+			rt_mutex_acquire(&mutexCamera, TM_INFINITE);
+			etatCam = etatCamera;
+			rt_mutex_release(&mutexCamera);
+			rt_mutex_acquire(&mutexPosition, TM_INFINITE);
+			etatPos = etatPosition;
+			rt_mutex_release(&mutexPosition);
+			if(etatCam == ACTION_FIND_ARENA){
 				camera->get_frame(camera,image);
 				arena = image->compute_arena_position(image);
 				d_imageshop_draw_arena(image, arena);
@@ -240,16 +256,17 @@ void camera(void) {
 			}
 			else{
 				camera->get_frame(camera,image);
-				if(arena != NULL)
+				if(arena != NULL){
 					d_imageshop_draw_arena(image, arena);
-				if(etatPosition == 1 && arena != NULL){
-					position = image->compute_robot_position(image, arena);
-					d_imageshop_draw_position(image, position);
-					if(position != NULL){
-						message = d_new_message();
-						message->put_position(message,position);
-						if (write_in_queue(&queueMsgGUI, message, sizeof (DMessage)) < 0) 
-		           				message->free(message);
+					if(etatPos == 1){
+						position = image->compute_robot_position(image, arena);
+						d_imageshop_draw_position(image, position);
+						if(position != NULL){
+							message = d_new_message();
+							message->put_position(message,position);
+							if (write_in_queue(&queueMsgGUI, message, sizeof (DMessage)) < 0) 
+				   				message->free(message);
+						}
 					}
 				}
 				jpeg->compress(jpeg,image);
@@ -268,7 +285,7 @@ void gestion_wdt(void){
 
 	
 	rt_sem_p(&semWdtRobot, TM_INFINITE);
-    	rt_task_set_periodic(NULL, TM_NOW, 1000000000);
+    	rt_task_set_periodic(NULL, TM_NOW, 500000000);
 	rt_printf("tgestion_wdt : Debut de l'éxecution periodique à 950ms (max 1050ms)\n");
 
 	while(1){
@@ -289,7 +306,7 @@ void gestion_wdt(void){
 }
 
 int testCommRobot(void){
-	#define LIMITE 10
+	#define LIMITE 30
 	DMessage* message;
 	int status;
 	
@@ -325,47 +342,39 @@ int testCommRobot(void){
 
 void survBatterie(void){
 	int status;
-	int* niveau_bat = malloc(sizeof(int));
+	int niveau_bat;	
 	DMessage* message;
 	DBattery* battery;
 	
 	battery = d_new_battery();
 	
-	rt_printf("1\n");
-	rt_task_set_periodic(NULL, TM_NOW, 2500000000);
+
+	rt_task_set_periodic(NULL, TM_NOW, 950000000);
 	while(1){
 		rt_task_wait_period(NULL);
-		rt_printf("2\n");
 		rt_mutex_acquire(&mutexEtat, TM_INFINITE);
 		status = etatCommRobot;
-		rt_mutex_release(&mutexEtat);
-		rt_printf("3\n");	
+		rt_mutex_release(&mutexEtat);	
 		if(status == STATUS_OK){
-			rt_printf("4\n");
 			rt_mutex_acquire(&mutexCommRobot, TM_INFINITE);
-			robot->get_vbat(robot,niveau_bat);
+			robot->get_vbat(robot,&niveau_bat);
 			rt_mutex_release(&mutexCommRobot);
-			rt_printf("5\n");
 			status = testCommRobot();
-			rt_printf("batterie : %d\n",*niveau_bat);
 			if(status == STATUS_OK){
-				rt_printf("6\n");
-				if(*niveau_bat == BATTERY_OFF){
-					battery->set_level(battery,*niveau_bat);
+				battery->set_level(battery,niveau_bat);
+				if(niveau_bat == BATTERY_OFF){
+					rt_mutex_acquire(&mutexCommRobot, TM_INFINITE);
+					status = robot->stop(robot);    								
+					rt_mutex_release(&mutexCommRobot);
+					rt_mutex_acquire(&mutexEtat, TM_INFINITE);
+					etatCommRobot = status;    							
+					rt_mutex_release(&mutexEtat);
 				}
-				else if(*niveau_bat == BATTERY_LOW){
-					battery->set_level(battery,*niveau_bat);
-				}
-				else if(*niveau_bat == BATTERY_OK){
-					battery->set_level(battery,*niveau_bat);
-					rt_printf("8\n");
-				} 
-				
 				message = d_new_message();
 				message->put_battery_level(message,battery);
 				rt_printf("message : %s\n",message);
 				if (write_in_queue(&queueMsgGUI, message, sizeof (DMessage)) < 0) 
-			   	message->free(message);
+			   		message->free(message);			
 			}
 		}	
 	}
