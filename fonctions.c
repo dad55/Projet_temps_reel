@@ -285,7 +285,7 @@ void gestion_wdt(void){
 
 	
 	rt_sem_p(&semWdtRobot, TM_INFINITE);
-    	rt_task_set_periodic(NULL, TM_NOW, 500000000);
+    	rt_task_set_periodic(NULL, TM_NOW, 1000000000);
 	rt_printf("tgestion_wdt : Debut de l'éxecution periodique à 950ms (max 1050ms)\n");
 
 	while(1){
@@ -349,7 +349,7 @@ void survBatterie(void){
 	battery = d_new_battery();
 	
 
-	rt_task_set_periodic(NULL, TM_NOW, 950000000);
+	rt_task_set_periodic(NULL, TM_NOW, 2000000000);
 	while(1){
 		rt_task_wait_period(NULL);
 		rt_mutex_acquire(&mutexEtat, TM_INFINITE);
