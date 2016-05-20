@@ -47,7 +47,7 @@ void connecter(void * arg) {
 
     if (status == STATUS_OK) {
       rt_mutex_acquire(&mutexCommRobot, TM_INFINITE);
-      status = robot->start(robot);
+      status = robot->start_insecurely(robot);
       rt_mutex_release(&mutexCommRobot);
       if (status == STATUS_OK){
 	rt_printf("tconnect : Robot démarrer\n");
