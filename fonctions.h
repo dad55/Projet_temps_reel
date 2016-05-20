@@ -18,8 +18,6 @@ extern "C" {
   void communiquer(void *arg);
   void deplacer(void *arg);
   void envoyer(void *arg);
-
-  ////////////////////////////////////////
   void camera(void);
   void gestion_wdt(void);
   int testCommRobot(void);

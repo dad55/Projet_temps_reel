@@ -15,7 +15,6 @@ extern RT_TASK tServeur;
 extern RT_TASK tconnect;
 extern RT_TASK tmove;
 extern RT_TASK tenvoyer;
-//////////////////////////////////////////////////////////
 extern RT_TASK tcamera;
 extern RT_TASK tgestion_wdt;
 extern RT_TASK tsurvBatterie;
@@ -28,7 +27,7 @@ extern RT_MUTEX mutexMessage;
 extern RT_MUTEX mutexCamera;
 extern RT_MUTEX mutexPosition;
 
-/* @descripteurs des sempahore */
+/* @descripteurs des sempahores */
 extern RT_SEM semConnecterRobot;
 extern RT_SEM semWdtRobot;
 

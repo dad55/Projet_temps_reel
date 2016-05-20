@@ -7,15 +7,16 @@
 
 #include "global.h"
 
+/* Descripteur des taches */
 RT_TASK tServeur;
 RT_TASK tconnect;
 RT_TASK tmove;
 RT_TASK tenvoyer;
-//////////////////////////////////
 RT_TASK tcamera;
 RT_TASK tgestion_wdt;
 RT_TASK tsurvBatterie;
 
+/* Descripteur des mutex */
 RT_MUTEX mutexEtat;
 RT_MUTEX mutexMove;
 RT_MUTEX mutexCommRobot;
@@ -23,11 +24,13 @@ RT_MUTEX mutexMessage;
 RT_MUTEX mutexCamera;
 RT_MUTEX mutexPosition;
 
+/* Descripteur des sémaphores */
 RT_SEM semConnecterRobot;
 RT_SEM semWdtRobot;
 
 RT_QUEUE queueMsgGUI;
 
+/* Variable partagée */
 int etatCommMoniteur = 1;
 int etatCommRobot = 1;
 int etatCamera = 0;
@@ -40,6 +43,7 @@ DServer *serveur;
 
 int MSG_QUEUE_SIZE = 10;
 
+/* Priorités des taches */
 int PRIORITY_TSERVEUR = 14;
 int PRIORITY_TCONNECT = 13;
 int PRIORITY_TMOVE = 10;

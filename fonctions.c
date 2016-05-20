@@ -8,7 +8,6 @@ void envoyer(void * arg) {
 
   while (1) {
     rt_printf("tenvoyer : Attente d'un message\n");
-    //rt_mutex_acquire(&mutexMessage, TM_INFINITE);
     if ((err = rt_queue_read(&queueMsgGUI, &msg, sizeof (DMessage), TM_INFINITE)) >= 0) {
       rt_printf("tenvoyer : envoi d'un message au moniteur\n");
       serveur->send(serveur, msg);
@@ -16,10 +15,17 @@ void envoyer(void * arg) {
     } else {
       rt_printf("Error msg queue write: %s\n", strerror(-err));
     }
-    //rt_mutex_release(&mutexMessage);
   }
 }
 
+/* ========================================================= */
+/********************** CONNECTER ****************************/
+/* @IN : RIEN ************************************************/
+/* @OUT : RIEN ***********************************************/
+/* Cette tache permet d'établir la connection avec le robot  */
+/* Quand la connection est établie, on lance le watchdog     */
+/* ainsi que les déplacements                                */
+/*===========================================================*/
 void connecter(void * arg) {
   int status;
   int versionMin, versionMaj;
@@ -76,6 +82,14 @@ void connecter(void * arg) {
     }
   }
 }
+
+/* ========================================================= */
+/********************* COMMUNIQUER ***************************/
+/* @IN : RIEN ************************************************/
+/* @OUT : RIEN ***********************************************/
+/* Cette tache permet de gérer la communication entre le     */
+/* superviseur et le moniteur                                    */
+/*===========================================================*/
 
 void communiquer(void *arg) {
   DMessage *msg = d_new_message();
@@ -146,6 +160,14 @@ void communiquer(void *arg) {
   }
 }
 
+/* ========================================================= */
+/********************** DEPLACER *****************************/
+/* @IN : RIEN ************************************************/
+/* @OUT : RIEN ***********************************************/
+/* Cette tache permet de gérer les déplacements du robots à  */
+/* partir des ordres reçus                                   */
+/*===========================================================*/
+
 void deplacer(void *arg) {
   int status = 1;
   int gauche;
@@ -212,6 +234,13 @@ int write_in_queue(RT_QUEUE *msgQueue, void * data, int size) {
   return err;
 }
 
+/* ========================================================= */
+/*********************** CAMERA ******************************/
+/* @IN : RIEN ************************************************/
+/* @OUT : RIEN ***********************************************/
+/* Cette tache permet de gérer le traitement des images      */
+/* reçues par la webcam                                      */
+/*===========================================================*/
 
 void camera(void) {
   DCamera* camera;
@@ -279,6 +308,14 @@ void camera(void) {
   }
 }
 
+/* ========================================================= */
+/********************* GESTION_WDT ***************************/
+/* @IN : RIEN ************************************************/
+/* @OUT : RIEN ***********************************************/
+/* Cette tache permet de gérer le watchdog qui est installé  */
+/* sur le robot                                              */
+/*===========================================================*/
+
 void gestion_wdt(void){
   int status;
   //DMessage* message;
@@ -304,6 +341,16 @@ void gestion_wdt(void){
     }
   }
 }
+
+/* ========================================================= */
+/******************** testCommRobot  *************************/
+/* @IN : RIEN ************************************************/
+/* @OUT : RIEN ***********************************************/
+/* Cette fonction permet de gérer la communication entre     */
+/* le robot et le superviseur. C'est elle qui décide quand   */
+/* la connection a été perdu suite à un nombre d'échec dans  */
+/* les communications trop important                         */
+/*===========================================================*/
 
 int testCommRobot(void){
 #define LIMITE 30
@@ -340,6 +387,14 @@ int testCommRobot(void){
   return status;
 }
 
+/* ========================================================= */
+/********************* SURVBATTERIE **************************/
+/* @IN : RIEN ************************************************/
+/* @OUT : RIEN ***********************************************/
+/* Cette tache permet de gérer le niveau de charge de la     */
+/* batterie alimentant le robot                              */
+/*===========================================================*/
+
 void survBatterie(void){
   int status;
   int niveau_bat;	
@@ -372,7 +427,6 @@ void survBatterie(void){
 	}
 	message = d_new_message();
 	message->put_battery_level(message,battery);
-	rt_printf("message : %s\n",message);
 	if (write_in_queue(&queueMsgGUI, message, sizeof (DMessage)) < 0) 
 	  message->free(message);			
       }
